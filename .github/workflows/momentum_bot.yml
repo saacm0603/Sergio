@@ -1,0 +1,47 @@
+name: Bot momentum ETFs (Alpaca)
+
+# Corre dos veces cada día hábil. El bot solo opera el último día hábil del mes,
+# entre 120 y 5 minutos antes del cierre, y una sola vez por mes:
+#   18:35 UTC = 14:35 ET en horario de verano (EDT)
+#   19:35 UTC = 15:35 ET (EDT) / 14:35 ET (EST, invierno)
+on:
+  schedule:
+    - cron: "35 18 * * 1-5"
+    - cron: "35 19 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: "Enviar órdenes (si no, solo simulación)"
+        type: boolean
+        default: false
+      force:
+        description: "Rebalancear ahora aunque no sea fin de mes"
+        type: boolean
+        default: false
+
+concurrency:
+  group: momentum-bot
+  cancel-in-progress: false
+
+jobs:
+  rebalance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r bot/requirements.txt
+      - name: Ejecutar bot
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_PAPER: ${{ vars.ALPACA_PAPER || 'true' }}
+          BOT_CAPITAL: ${{ vars.BOT_CAPITAL }}
+          ALPACA_DATA_FEED: ${{ vars.ALPACA_DATA_FEED || 'iex' }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ inputs.execute }}" = "true" ]; then ARGS="$ARGS --execute"; fi
+          if [ "${{ inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
+          python bot/momentum_bot.py $ARGS

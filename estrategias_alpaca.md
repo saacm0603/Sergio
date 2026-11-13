@@ -205,7 +205,13 @@ def half_life(spread: pd.Series) -> float:
 
 ---
 
-## 5. Plan de acción recomendado
+## 5. Resultados de backtest (estrategias 1 y 3)
+
+Ver [`backtests/README.md`](backtests/README.md). Resumen (2007–2026, neto de costos):
+- **Estrategia 1 (momentum ETFs):** Sharpe 0.81, CAGR 5.7%, Max DD -12.6% (SPY: 0.63 / 10.9% / -55%). Robusta; útil como núcleo defensivo.
+- **Estrategia 3 (pares Chan):** buena en el periodo del libro, pero **negativa out-of-sample** tras costos (cartera de 3 pares: Sharpe -0.77). No recomendada sin rediseño.
+
+## 6. Plan de acción recomendado
 
 1. **Semana 1-2:** backtest en LEAN de 2.1 (momentum ETFs) y 2.2 (HQM) con datos 2010–hoy, costos incluidos.
 2. **Semana 3-4:** backtest de pares GLD/GDX y EWA/EWC con Kalman; test de cointegración rodante.
